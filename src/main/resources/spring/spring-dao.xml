@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans  http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+
+    http://www.springframework.org/schema/tx  http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+    http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+	<description>Spring公共配置-DAO</description>
+
+
+	<context:component-scan base-package="com.wyy.biz"/>
+	<context:component-scan base-package="com.wyy.utils"/>
+	<bean id="privilegeBaseApiService" class="com.wyy.api.impl.PrivilegeBaseApiServiceImpl" />
+	
+	<!-- 定义受环境影响易变的变量-->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
+		<property name="ignoreResourceNotFound" value="true" />
+		<property name="locations">
+			<list>
+				<value>classpath*:/config.properties</value>
+				<value>classpath*:/jdbc.properties</value>
+				<value>file:/d:/conf/cl/privilege-api-server/*.properties</value>
+                <value>file:/etc/conf/cl/privilege-api-server/*.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- 通过BeanFactoryAware，手动从spring容器获取bean -->
+    <bean class="com.wyy.utils.SpringContextHolder"  lazy-init="false" />
+
+    <!-- 数据库配置
+	<context:property-placeholder location="classpath:/jdbc.properties" ignore-unresolvable="true"/>
+     -->
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" >
+
+                <property name="driverClassName" value="${jdbc.driverClassName}" />
+                <property name="url" value="${jdbc.url}" />
+                <property name="username" value="${jdbc.username}" />
+                <property name="password" value="${jdbc.password}" />
+
+		<!--
+              <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+              <property name="url" value="jdbc:mysql://localhost:3306/privilege?useUnicode=true&amp;characterEncoding=utf8&amp;autoReconnect=true&amp;useSSL=false"/>
+              <property name="username" value="root"/>
+              <property name="password" value="123456"/>
+          -->
+	</bean>
+
+	<!--<bean id="sqlSessionFactoryPrivilegeCorba" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSourcePrivilegeCorba" />
+	</bean>
+	 会自动将basePackage中配置的包路径下的所有带有@Mapper标注的接口生成代理类，实现数据访问 -->
+
+	<!--3、配置SqlSessionFactory对象-->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="configLocation" value="classpath:mybatis-config.xml"/>
+		<property name="typeAliasesPackage" value="com.wyy.model"/>
+		<property name="mapperLocations" value="classpath:com/wyy/mapper/*.xml"/>
+	</bean>
+
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.wyy.mapper" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+	</bean>
+
+
+	<!-- 开启注解事务支持 -->
+	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+	<!--
+	<beans profile="production">
+		<bean id="dataSourcePrivilegeCorba" class="org.springframework.jndi.JndiObjectFactoryBean">
+			<property name="jndiName" value="java:/MySqlDS_JDBC" />
+		</bean>
+	</beans>
+
+    <beans profile="dev">
+	    <bean id="dataSourcePrivilegeCorba" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+		    <property name="url" value="jdbc:mysql://localhost:3306/privilege?useUnicode=true&amp;characterEncoding=utf8&amp;autoReconnect=true"/>
+		    <property name="username" value="root"/>
+		    <property name="password" value="123456"/>
+	    </bean>
+    </beans>
+    -->
+
+
+    
+</beans>

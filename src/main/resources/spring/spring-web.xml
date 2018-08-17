@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+    http://www.springframework.org/schema/beans  http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+    http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+    http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context-4.0.xsd
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd"
+>
+
+	<description>Spring公共配置</description>
+
+	<!--开启注解 -->
+	<context:annotation-config />
+	<!-- 开启自动切面代理 -->
+	<aop:aspectj-autoproxy />
+	
+	<context:component-scan base-package="com.wyy.controller"/>
+
+
+	<!-- Freemarker配置，参考： http://www.cnblogs.com/hoojo/archive/2011/04/19/2020551.html-->
+	<bean id="freemarkerConfig"
+		  class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
+		<!-- 视图资源位置 -->
+		<property name="templateLoaderPath" value="/WEB-INF/ftl/" />
+		<property name="defaultEncoding" value="UTF-8" />
+		<property name="freemarkerSettings">
+			<props>
+				<prop key="template_update_delay">0</prop><!-- 模板更新延时 -->
+				<prop key="locale">zh_CN</prop>
+				<prop key="default_encoding">UTF-8</prop>
+				<prop key="output_encoding">UTF-8</prop>
+				<prop key="template_exception_handler">rethrow</prop>
+				<prop key="number_format">#.##</prop>
+				<prop key="date_format">yyyy-MM-dd</prop>
+				<prop key="time_format">HH:mm:ss</prop>
+				<prop key="datetime_format">yyyy-MM-dd HH:mm:ss</prop>
+			</props>
+		</property>
+		<!-- 全局变量部分 -->
+		<property name="freemarkerVariables">
+			<map>
+				<entry key="BasePath" value="${web.basepath}" />
+				<entry key="IncPath" value="${inc.basepath}" />
+				<entry key="xml_escape" value-ref="fmXmlEscape" />
+			</map>
+		</property>
+	</bean>
+	<bean id="fmXmlEscape" class="freemarker.template.utility.XmlEscape" />
+	<!-- 配置freeMarker视图解析器 -->
+	<bean id="ftlviewResolver" class="org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver">
+		<property name="viewClass" value="org.springframework.web.servlet.view.freemarker.FreeMarkerView" />
+		<!-- 如果配置了这个节点，则视图必须是ftl，redirect等前缀都失效了 -->
+		<!-- <property name="viewNames" value="*.ftl"/> -->
+		<property name="contentType" value="text/html;charset=UTF-8" />
+		<property name="cache" value="true" />
+		<property name="prefix" value="" />
+		<property name="suffix" value="" />
+	</bean>
+
+
+	<!-- 这是简单配置，代替bean节点那种显示加载bean的配置方式，可以自动加载必须得如下两个bean -->
+	<!-- <mvc:annotation-driven /> -->
+	<!-- 这是标准配置，可以解决ResponseBody中文乱码问题 -->
+	<bean  class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
+		<property name="messageConverters">
+			<list>
+				<bean
+						class="org.springframework.http.converter.StringHttpMessageConverter">
+					<property name="supportedMediaTypes">
+						<list>
+							<value>text/plain;charset=UTF-8</value>
+						</list>
+					</property>
+					<property name="writeAcceptCharset" value="false"/>
+				</bean>
+			</list>
+		</property>
+	</bean>
+	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping" />
+
+	<mvc:interceptors>
+		<!-- 更改语言环境时，一个'locale'的请求参数发送  -->
+		<bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor" />
+		<!-- 权限拦截  -->
+		<mvc:interceptor>
+			<mvc:mapping path="/**/*.do" />
+			<bean class="com.wyy.interceptor.PrivilegeInterceptor"/>
+		</mvc:interceptor>
+	</mvc:interceptors>
+
+	<!-- 通过BeanFactoryAware，手动从spring容器获取bean -->
+	<!-- 已经在applicationContext.xml中定义了，这里就不用定义了 -->
+	<!-- <bean class="com.cl.privilege.utils.SpringContextHolder"/> -->
+
+
+    
+</beans>
