@@ -11,10 +11,6 @@
 	<description>Spring公共配置-DAO</description>
 
 
-	<context:component-scan base-package="com.wyy.biz"/>
-	<context:component-scan base-package="com.wyy.utils"/>
-	<bean id="privilegeBaseApiService" class="com.wyy.api.impl.PrivilegeBaseApiServiceImpl" />
-	
 	<!-- 定义受环境影响易变的变量-->
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE" />
@@ -29,11 +25,12 @@
 		</property>
 	</bean>
 
+	<context:component-scan base-package="com.wyy.utils"/>
 	<!-- 通过BeanFactoryAware，手动从spring容器获取bean -->
-    <bean class="com.wyy.utils.SpringContextHolder"  lazy-init="false" />
+	<bean class="com.wyy.utils.SpringContextHolder"  lazy-init="false" />
 
-    <!-- 数据库配置
-	<context:property-placeholder location="classpath:/jdbc.properties" ignore-unresolvable="true"/>
+	<!-- 数据库配置
+    <context:property-placeholder location="classpath:/jdbc.properties" ignore-unresolvable="true"/>
      -->
 	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" >
 
@@ -41,19 +38,9 @@
                 <property name="url" value="${jdbc.url}" />
                 <property name="username" value="${jdbc.username}" />
                 <property name="password" value="${jdbc.password}" />
-
-		<!--
-              <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-              <property name="url" value="jdbc:mysql://localhost:3306/privilege?useUnicode=true&amp;characterEncoding=utf8&amp;autoReconnect=true&amp;useSSL=false"/>
-              <property name="username" value="root"/>
-              <property name="password" value="123456"/>
-          -->
 	</bean>
 
-	<!--<bean id="sqlSessionFactoryPrivilegeCorba" class="org.mybatis.spring.SqlSessionFactoryBean">
-		<property name="dataSource" ref="dataSourcePrivilegeCorba" />
-	</bean>
-	 会自动将basePackage中配置的包路径下的所有带有@Mapper标注的接口生成代理类，实现数据访问 -->
+	<!-- 会自动将basePackage中配置的包路径下的所有带有@Mapper标注的接口生成代理类，实现数据访问 -->
 
 	<!--3、配置SqlSessionFactory对象-->
 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">

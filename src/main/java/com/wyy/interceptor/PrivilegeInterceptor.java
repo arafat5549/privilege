@@ -4,10 +4,11 @@ import com.wyy.api.IPrivilegeBaseApiService;
 import com.wyy.model.User;
 import com.wyy.utils.ConfigUtil;
 import com.wyy.utils.SessionUtil;
-import org.jasig.cas.client.util.AssertionHolder;
-import org.jasig.cas.client.validation.Assertion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import sun.rmi.runtime.Log;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,7 +18,8 @@ import javax.servlet.http.HttpServletResponse;
  * 拦截指定path，进行权限验证，及用户的本地session过期后，重新进行赋值
  */
 public class PrivilegeInterceptor extends HandlerInterceptorAdapter {
-	
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+
 	@Autowired
 	private ConfigUtil configUtil;
 	@Autowired
@@ -38,6 +40,7 @@ public class PrivilegeInterceptor extends HandlerInterceptorAdapter {
 //			return false;
 //		}
 //
+
 		User user = SessionUtil.getSessionUser(request);
 
 		if(user == null)
@@ -46,6 +49,7 @@ public class PrivilegeInterceptor extends HandlerInterceptorAdapter {
 			user = privilegeBaseApiService.getUserByUsername("root");//(assertion.getPrincipal().getName());
 			request.getSession().setAttribute(SessionUtil.SessionSystemLoginUserName,user);
 		}
+		LOG.info("PrivilegeInterceptor="+user);
 		
 		//判断权限，没有权限，进入没有权限页面
 		
